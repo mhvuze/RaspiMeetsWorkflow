@@ -5,7 +5,7 @@ import os
 import requests
 import sys
 
-# Uploading
+# Upload to online service
 def uploadCard(cardFile):
     try:
         server = requests.get('https://dropfile.to/getuploadserver').text.strip() + "/upload"
@@ -16,6 +16,14 @@ def uploadCard(cardFile):
             print("Upload failed in final stage.")
     except:
         print("Upload failed in secondary stage.")
+
+# Move to local server
+def moveCard(cardFile):
+    try:
+        os.rename(cardFile, "/var/www/html/temp.vcf")
+        print("http://192.168.2.121/temp.vcf")
+    except:
+        print("Moving file to server failed.")
 
 # Basics
 header = {"user-agent": "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0"}
@@ -36,6 +44,7 @@ if mode == "fetch-vcard":
         # Get result entries for number
         try:
             urlResult = soup.find_all("a", class_=" name")[0].get("href")
+            callerName = soup.find_all("div", class_="name")[0].get("title")
         except:
             print("No entries found.")
         else:
@@ -55,7 +64,7 @@ if mode == "fetch-vcard":
                     with open('./temp.vcf', 'w', encoding='ISO-8859-1') as f:
                         f.write(cardContent)
                     
-                    print(urlCard)
+                    print(urlCard + ";;;" + callerName)
                 except:
                     print("Error during vCard fetch.")
 # Modify vCard
@@ -77,11 +86,12 @@ elif mode == "mod-vcard":
             cardContent.append("END:VCARD")
             with open('./temp.vcf', 'w', encoding='ISO-8859-1') as f:
                 for line in cardContent:
-                    f.write(line)
+                    f.write(line.replace(";CHARSET=ISO-8859-1", ""))
             
-            # Upload new vCard
+            # Process new vCard
             try:
-                uploadCard('./temp.vcf')
+                #uploadCard('./temp.vcf')
+                moveCard('./temp.vcf')
                 os.remove('./temp.vcf')
             except:
                 print("Error during final vCard handling.")
