@@ -9,7 +9,7 @@ import sys
 def uploadCard(cardFile):
     try:
         server = requests.get('https://dropfile.to/getuploadserver').text.strip() + "/upload"
-        upload = requests.post(server, files={'file':open(cardFile, 'rb')})
+        upload = requests.post(server, files={'file':open('./temp.vcf', 'rb')})
         if(upload.json()['status']==0 and upload.status_code==200):
             print(upload.json()['url'])
         else:
@@ -32,7 +32,7 @@ mode = sys.argv[1]
 # Fetch vCard
 if mode == "fetch-vcard":
     number = sys.argv[2]
-    urlSearch = "https://www.dastelefonbuch.de/Rückwärts-Suche/" + number
+    urlSearch = "https://www.dastelefonbuch.de/RÃ¼ckwÃ¤rts-Suche/" + number
 
     # Get result page
     try:
@@ -79,14 +79,25 @@ elif mode == "mod-vcard":
     try:
         with open('./temp.vcf', 'r', encoding='ISO-8859-1') as f:
             cardContent = f.readlines()
-        # Add organisation to vCard
         try:
+            # Add organisation to vCard
             cardContent = cardContent[:-1]
             cardContent.append("ORG:%s;\n" % organisation)
             cardContent.append("END:VCARD")
+
+            # Clean up vCard, reformat name if that's simple
             with open('./temp.vcf', 'w', encoding='ISO-8859-1') as f:
                 for line in cardContent:
-                    f.write(line.replace(";CHARSET=ISO-8859-1", ""))
+                    line = line.replace(";CHARSET=ISO-8859-1", "")
+                    
+                    if line.startswith("FN:") and line.count(" ") == 1:
+                        names = line.replace("FN:", "").split(" ")
+                        f.write(("FN: {0}  {1} \n").format(names[1].strip(), names[0]))
+                    elif line.startswith("N:") and line.count(" ") == 1:
+                        names = line.replace("N:", "").split(" ")
+                        f.write(("N:{0};{1};;;\n").format(names[0], names[1].strip()))
+                    else:
+                        f.write(line)
             
             # Process new vCard
             try:
@@ -99,3 +110,4 @@ elif mode == "mod-vcard":
             print("Error during vCard modification.")
     except:
         print("Could not open base vCard.")
+
