@@ -9,7 +9,7 @@ import sys
 def uploadCard(cardFile):
     try:
         server = requests.get('https://dropfile.to/getuploadserver').text.strip() + "/upload"
-        upload = requests.post(server, files={'file':open('./temp.vcf', 'rb')})
+        upload = requests.post(server, files={'file':open(cardFile, 'rb')})
         if(upload.json()['status']==0 and upload.status_code==200):
             print(upload.json()['url'])
         else:
