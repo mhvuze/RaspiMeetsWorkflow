@@ -9,7 +9,7 @@ import sys
 def uploadCard(cardFile):
     try:
         server = requests.get('https://dropfile.to/getuploadserver').text.strip() + "/upload"
-        upload = requests.post(server, files={'file':open('./temp.vcf', 'rb')})
+        upload = requests.post(server, files={'file':open(cardFile, 'rb')})
         if(upload.json()['status']==0 and upload.status_code==200):
             print(upload.json()['url'])
         else:
@@ -32,7 +32,7 @@ mode = sys.argv[1]
 # Fetch vCard
 if mode == "fetch-vcard":
     number = sys.argv[2]
-    urlSearch = "https://www.dastelefonbuch.de/RÃ¼ckwÃ¤rts-Suche/" + number
+    urlSearch = "https://www.dastelefonbuch.de/Rückwärts-Suche/" + number
 
     # Get result page
     try:
@@ -110,4 +110,3 @@ elif mode == "mod-vcard":
             print("Error during vCard modification.")
     except:
         print("Could not open base vCard.")
-
