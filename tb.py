@@ -5,8 +5,6 @@ import os
 import requests
 import sys
 
-import traceback
-
 # Upload to online service
 def uploadCard(cardFile):
     try:
@@ -36,9 +34,17 @@ def cleanCard(cardFile, cardContent):
             if line.startswith("FN:") and line.count(" ") == 1:
                 names = line.replace("FN:", "").split(" ")
                 f.write(("FN: {0}  {1} \n").format(names[1].strip(), names[0]))
+            elif line.startswith("FN:") and line.count(" u. ") == 1:
+                names = line.replace("FN:", "").split(" u. ")
+                prename = names[0].split(" ")
+                f.write(("FN: {0}  {1} u. {2} \n").format(prename[0], prename[1].strip(), names[1].strip()))
             elif line.startswith("N:") and line.count(" ") == 1:
                 names = line.replace("N:", "").split(" ")
                 f.write(("N:{0};{1};;;\n").format(names[0], names[1].strip()))
+            elif line.startswith("N:") and line.count(" u. ") == 1:
+                names = line.replace("N:", "").split(" u. ")
+                prename = names[0].split(" ")
+                f.write(("N:{0};{1} u. {2};;;\n").format(prename[0], prename[1].strip(), names[1].strip()))
             elif line.startswith("VERSION:"):
                 f.write("VERSION:3.0\n")
             else:
